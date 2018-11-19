@@ -19,7 +19,7 @@ $('#inputfile').change(function () {
 });
 
 function draw(data) {
-
+    console.log(data);
     var date = [];
     data.forEach(element => {
         if (date.indexOf(element["date"]) == -1) {
