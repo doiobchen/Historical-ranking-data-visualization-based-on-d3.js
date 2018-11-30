@@ -5,13 +5,22 @@
 <h3 align="center">将历史数据排名转化为动态柱状图图表</h3>
 
 
+  
+
 <p align="center">
   <a href="readme-en.md">English</a>
 </p>
 
+[![GitHub issues](https://img.shields.io/github/issues/Jannchie/Historical-ranking-data-visualization-based-on-d3.js.svg?style=flat-square)](https://github.com/Jannchie/Historical-ranking-data-visualization-based-on-d3.js/issues)
+[![GitHub stars](https://img.shields.io/github/stars/Jannchie/Historical-ranking-data-visualization-based-on-d3.js.svg?style=flat-square)](https://github.com/Jannchie/Historical-ranking-data-visualization-based-on-d3.js/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Jannchie/Historical-ranking-data-visualization-based-on-d3.js.svg?style=flat-square)](https://github.com/Jannchie/Historical-ranking-data-visualization-based-on-d3.js/network)
+[![GitHub license](https://img.shields.io/github/license/Jannchie/Historical-ranking-data-visualization-based-on-d3.js.svg?style=flat-square)](https://github.com/Jannchie/Historical-ranking-data-visualization-based-on-d3.js/blob/master/LICENSE)
+
 这是一个数据可视化项目，基于D3.js。能够将历史数据排名转化为动态柱状图图表。
 
 这个项目旨在降低此类视频的使用门槛与提高生产效率，使得没有编程经验的用户也能无痛制作排名可视化动画。
+
+
 
 ----
 
@@ -96,3 +105,18 @@ name|type|value|date
 - 现在默认随机配色，并且可以只指定部分颜色了。
 - 添加了颜色绑定增长率的选项，开启后颜色与增长率有关。越黄越快，越蓝越慢。
 - 添加了barinfo过长时的另一种显示方法，在config.js中用long参数控制。
+
+## 2018-11-18
+
+- 修复一些bug
+- 现在使用计数器会自动覆盖掉type标签，而不是直接报错。
+
+## 2018-11-26
+
+- 史诗级更新，更新了动画算法。
+- 现在可以通过选项指定匀速运动。
+
+
+## 2018-11-29
+
+- 现在发生错误会弹出对话框，便于定位并描述错误了。
