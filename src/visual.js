@@ -36,11 +36,13 @@ function draw(data) {
     var divide_by = config.divide_by;
     var name_list = []
     var changeable_color = config.changeable_color;
-    data.sort((a, b) => Number(b.value) - Number(a.value)).forEach(e => {
-        if (name_list.indexOf(e.name) == -1) {
-            name_list.push(e.name)
+    data.sort((a, b) => Number(b.value) - Number(a.value))
+        .forEach(e => {
+            if (name_list.indexOf(e.name) == -1) {
+                name_list.push(e.name)
+            }
         }
-    })
+    )
 
     var colorRange = d3.interpolateCubehelix("#003AAB", "#01ADFF")
     // 选择颜色
