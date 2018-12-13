@@ -7,7 +7,6 @@
  */
 
 d3.text("has0score.csv").then(function(csvString){
-    console.log("csvString: \n",csvString);
     var data = d3.csvParse(csvString);
     try {
         draw(data);
@@ -18,43 +17,17 @@ d3.text("has0score.csv").then(function(csvString){
 
 function draw(data) {
     console.log(data);
-    var date = [];
-    data.forEach(element => {
-        if (date.indexOf(element["date"]) == -1) {
-            date.push(element["date"]);
-        }
-    });
+    var time = getDatesList(data); 
+    var name_list = getNameList(data);
+
     let rate = [];
-    var auto_sort = config.auto_sort;
-    if (auto_sort) {
-        var time = date.sort((x, y) => new Date(x) - new Date(y));
-    } else {
-        var time = date;
-    }
-    var use_semilogarithmic_coordinate = config.use_semilogarithmic_coordinate;
     var big_value = config.big_value;
     var divide_by = config.divide_by;
-    var name_list = []
-    var changeable_color = config.changeable_color;
-    data.sort((a, b) => Number(b.value) - Number(a.value))
-        .forEach(e => {
-            if (name_list.indexOf(e.name) == -1) {
-                name_list.push(e.name)
-            }
-        }
-    )
 
     var colorRange = d3.interpolateCubehelix("#003AAB", "#01ADFF")
     // 选择颜色
     function getColor(d) {
         var r = 0.00;
-        if (changeable_color) {
-            var v = Math.abs(rate[d.name] - rate['MIN_RATE']) / (rate['MAX_RATE'] - rate['MIN_RATE'])
-            if (isNaN(v) || v == -1) {
-                return colorRange(0.6)
-            }
-            return colorRange(v)
-        }
 
         if (d[divide_by] in config.color)
             return config.color[d[divide_by]]
@@ -131,11 +104,7 @@ function draw(data) {
         .attr('y', 100);
 
     var xScale = d3.scaleLinear()
-    if (use_semilogarithmic_coordinate) {
-        xScale = d3.scalePow().exponent(.5);
-    } else {
-        xScale = d3.scaleLinear();
-    }
+    xScale = d3.scaleLinear();
     const yScale = d3.scaleBand()
         .paddingInner(0.3)
         .paddingOuter(0);
@@ -296,9 +265,7 @@ function draw(data) {
         } else {
             xScale.domain([0, d3.max(currentData, xValue) + 1]).range([0, innerWidth]);
         }
-        if (auto_sort) {
-
-            dateLabel.data(currentData).transition().duration(3000 * interval_time).ease(d3.easeLinear).tween(
+        dateLabel.data(currentData).transition().duration(3000 * interval_time).ease(d3.easeLinear).tween(
                 "text",
                 function (d) {
                     var self = this;
@@ -309,11 +276,7 @@ function draw(data) {
                         var dateformat = d3.timeFormat(timeFormat)
                         self.textContent = dateformat(i(t));
                     };
-                });
-
-        } else {
-            dateLabel.text(currentdate);
-        }
+        });
 
         xAxisG.transition().duration(3000 * interval_time).ease(d3.easeLinear).call(xAxis);
         yAxisG.transition().duration(3000 * interval_time).ease(d3.easeLinear).call(yAxis);
@@ -655,4 +618,26 @@ function draw(data) {
         d3.transition()
             .each(change)
     }, 3000 * update_rate * interval_time)
+};
+
+function getDatesList(data) {
+    let dates = [];
+    data.forEach(element => {
+        if (dates.indexOf(element["date"]) == -1) {
+            dates.push(element["date"]);
+        }
+    });
+    dates.sort((x, y) => new Date(x) - new Date(y));
+    return dates;
+}
+
+function getNameList(data) {
+    let nameList = [];
+
+    data.forEach(e => {
+        if (nameList.indexOf(e.name) == -1) {
+            nameList.push(e.name)
+        }
+    });
+    return nameList;
 }
