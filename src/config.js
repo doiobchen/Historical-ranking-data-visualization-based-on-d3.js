@@ -40,7 +40,7 @@
   item_x: 400,
   
   // 时间点间隔时间。
-  interval_time: 1,
+  interval_time: .6,
   
   // 上方文字水平高度。
   text_y: -50,
@@ -75,8 +75,6 @@
   dateLabel_x: 1440,
   dateLabel_y: 750,
 
-  // 允许大于平均值的条消失时上浮。
-  allow_up: false,
 
   // 设置动画效果，如果为true，则新进入的条目从0开始。
   enter_from_0: false,

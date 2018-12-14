@@ -19,8 +19,6 @@ function draw(data) {
     console.log(data);
     var time = getDatesList(data); 
     var name_list = getNameList(data);
-
-    let rate = [];
     var big_value = config.big_value;
     var divide_by = config.divide_by;
 
@@ -37,7 +35,6 @@ function draw(data) {
     }
 
     var showMessage = config.showMessage;
-    var allow_up = config.allow_up;
     var interval_time = config.interval_time;
     var text_y = config.text_y;
     var itemLabel = config.itemLabel;
@@ -76,13 +73,12 @@ function draw(data) {
 
     var enter_from_0 = config.enter_from_0;
     interval_time /= 3;
-    var lastData = [];
     var currentdate = time[0].toString();
     var currentData = [];
     var lastname;
+    
+    
     const svg = d3.select('svg');
-
-
 
     const width = svg.attr('width');
     const height = svg.attr('height');
@@ -104,7 +100,6 @@ function draw(data) {
         .attr('y', 100);
 
     var xScale = d3.scaleLinear()
-    xScale = d3.scaleLinear();
     const yScale = d3.scaleBand()
         .paddingInner(0.3)
         .paddingOuter(0);
@@ -144,73 +139,10 @@ function draw(data) {
 
     function dataSort() {
         if (reverse) {
-            currentData.sort(function (a, b) {
-                if (Number(a.value) == Number(b.value)) {
-                    var r1 = 0;
-                    var r2 = 0;
-                    for (let index = 0; index < a.name.length; index++) {
-                        r1 = r1 + a.name.charCodeAt(index);
-                    }
-                    for (let index = 0; index < b.name.length; index++) {
-                        r2 = r2 + b.name.charCodeAt(index);
-                    }
-                    return r2 - r1;
-                } else {
-                    return Number(a.value) - Number(b.value);
-                }
-            });
+            currentData.sort((a, b) => { return (Number(a.value) - Number(b.value)); });
         } else {
-            currentData.sort(function (a, b) {
-                if (Number(a.value) == Number(b.value)) {
-                    var r1 = 0;
-                    var r2 = 0;
-                    for (let index = 0; index < a.name.length; index++) {
-                        r1 = r1 + a.name.charCodeAt(index);
-                    }
-                    for (let index = 0; index < b.name.length; index++) {
-                        r2 = r2 + b.name.charCodeAt(index);
-                    }
-                    return r2 - r1;
-                } else {
-                    return Number(b.value) - Number(a.value);
-                }
-            });
+            currentData.sort((a, b) => { return (Number(b.value) - Number(a.value)); });
         }
-    }
-
-    function getCurrentData(date) {
-        rate = [];
-        currentData = [];
-        data.forEach(element => {
-            if (element["date"] == date && parseFloat(element['value']) != 0) {
-                currentData.push(element);
-            }
-        });
-
-        rate['MAX_RATE'] = 0;
-        rate['MIN_RATE'] = 1;
-        currentData.forEach(e => {
-            _cName = e.name
-            lastData.forEach(el => {
-                if (el.name == e.name) {
-                    rate[e.name] = Number(Number(e.value) - Number(el.value));
-                }
-            });
-            if (rate[e.name] == undefined) {
-                rate[e.name] = rate['MIN_RATE'];
-            }
-            if (rate[e.name] > rate['MAX_RATE']) {
-                rate['MAX_RATE'] = rate[e.name]
-            } else if (rate[e.name] < rate['MIN_RATE']) {
-                rate['MIN_RATE'] = rate[e.name]
-            }
-        })
-        currentData = currentData.slice(0, max_number);
-
-        d3.transition("2")
-            .each(redraw)
-        lastData = currentData;
-
     }
 
     if (showMessage) {
@@ -243,13 +175,9 @@ function draw(data) {
             }
         }
     }
-
-    var lastname;
     var counter = {
         "value": 1
     };
-
-    var avg = 0;
 
     function redraw() {
 
@@ -537,17 +465,11 @@ function draw(data) {
             }).duration(2990 * interval_time).attr("x", d => xScale(xValue(d)) + 10)
 
         }
-        avg = (Number(currentData[0]["value"]) + Number(currentData[currentData.length - 1]["value"])) / 2
 
         var barExit = bar.exit().attr("fill-opacity", 1).transition().duration(2500 * interval_time)
 
         barExit.attr("transform", function (d) {
-                if (Number(d.value) > avg && allow_up) {
-
-                    return "translate(0," + "-100" + ")";
-                }
                 return "translate(0," + "880" + ")";
-
             })
             .remove().attr("fill-opacity", 0);
         barExit.select("rect").attr("fill-opacity", 0).attr("width", xScale(currentData[currentData.length - 1]["value"]))
@@ -594,17 +516,13 @@ function draw(data) {
     }
 
     var i = 0;
-    var p = config.wait;
     var update_rate = config.update_rate
     var inter = setInterval(function next() {
 
-        // 空过p回合
-        while (p) {
-            p -= 1;
-            return;
-        }
         currentdate = time[i];
-        getCurrentData(time[i]);
+        currentData = dataOnDate(data, time[i]);
+        d3.transition("2")
+            .each(redraw);
         i++;
 
         if (i >= time.length) {
@@ -640,4 +558,14 @@ function getNameList(data) {
         }
     });
     return nameList;
+}
+
+function dataOnDate(data, date) {
+    let dataOnDate = [];
+    data.forEach(element => {
+        if (element["date"] == date) {
+            dataOnDate.push(element);
+        }
+    });
+    return dataOnDate;
 }
