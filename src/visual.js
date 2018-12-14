@@ -19,7 +19,6 @@ function draw(data) {
     console.log(data);
     var time = getDatesList(data); 
     var name_list = getNameList(data);
-    var big_value = config.big_value;
     var divide_by = config.divide_by;
 
     var colorRange = d3.interpolateCubehelix("#003AAB", "#01ADFF")
@@ -51,7 +50,7 @@ function draw(data) {
     var use_counter = config.use_counter;
     // 每个数据的间隔日期
     var step = config.step;
-    var long = config.long;
+
     var format = config.format
     var left_margin = config.left_margin;
     var right_margin = config.right_margin;
@@ -182,24 +181,15 @@ function draw(data) {
     function redraw() {
 
         if (currentData.length == 0) return;
-        yScale
-            .domain(currentData.map(d => d.name).reverse())
-            .range([innerHeight, 0]);
-        // x轴范围
-        // 如果所有数字很大导致拉不开差距
-
-        if (big_value) {
-            xScale.domain([2 * d3.min(currentData, xValue) - d3.max(currentData, xValue), d3.max(currentData, xValue) + 10]).range([0, innerWidth]);
-        } else {
-            xScale.domain([0, d3.max(currentData, xValue) + 1]).range([0, innerWidth]);
-        }
+        yScale.domain(currentData.map(d => d.name))
+              .range([0, innerHeight]);
+        xScale.domain([0, d3.max(currentData, xValue) + 1])
+              .range([0, innerWidth]);
         dateLabel.data(currentData).transition().duration(3000 * interval_time).ease(d3.easeLinear).tween(
                 "text",
                 function (d) {
                     var self = this;
                     var i = d3.interpolateDate(new Date(self.textContent), new Date(d.date))
-                    // var prec = (new Date(d.date) + "").split(".");
-                    // var round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
                     return function (t) {
                         var dateformat = d3.timeFormat(timeFormat)
                         self.textContent = dateformat(i(t));
@@ -286,15 +276,11 @@ function draw(data) {
             .attr("y", 20)
             .attr("text-anchor", "end")
             .text(function (d) {
-                if (long) {
-                    return ""
-                }
                 return d.name;
             })
         // bar上文字
         var barInfo = barEnter.append("text").attr("x",
                 function (d) {
-                    if (long) return 10;
                     if (enter_from_0) {
                         return 0;
                     } else {
@@ -315,7 +301,6 @@ function draw(data) {
                     return d.name;
                 })
             .attr("x", d => {
-                if (long) return 10;
                 return xScale(xValue(d)) - 10
             }).attr(
                 "fill-opacity",
@@ -328,7 +313,6 @@ function draw(data) {
             .attr("y", 2)
             .attr("dy", ".5em")
             .attr("text-anchor", function () {
-                if (long) return 'start';
                 return 'end';
             })
             .attr("stroke-width", function (d) {
@@ -337,53 +321,35 @@ function draw(data) {
                 }
                 return "1px";
             });
-        if (long) {
-            barInfo.tween(
+
+        barEnter.append("text").attr("x",
+                function () {
+                    if (enter_from_0) {
+                        return 0;
+                    } else {
+                        return xScale(currentData[currentData.length - 1].value);
+                    }
+                }).attr("y", 50).attr("fill-opacity", 0).style('fill', d => getColor(d)).transition()
+            .duration(2990 * interval_time).tween(
                 "text",
                 function (d) {
                     var self = this;
-
                     var i = d3.interpolate(self.textContent, Number(d.value)),
                         prec = (Number(d.value) + "").split("."),
                         round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
                     return function (t) {
-                        self.textContent = d[divide_by] + "-" + d.name + '  数值:' + d3.format(format)(Math.round(i(t) * round) / round);
+                        self.textContent = d3.format(format)(Math.round(i(t) * round) / round);
+                        value = self.textContent
                     };
-                })
-        }
-        if (!long) {
-
-            barEnter.append("text").attr("x",
-                    function () {
-                        if (long) {
-                            return 10;
-                        }
-                        if (enter_from_0) {
-                            return 0;
-                        } else {
-                            return xScale(currentData[currentData.length - 1].value);
-                        }
-                    }).attr("y", 50).attr("fill-opacity", 0).style('fill', d => getColor(d)).transition()
-                .duration(2990 * interval_time).tween(
-                    "text",
-                    function (d) {
-                        var self = this;
-                        var i = d3.interpolate(self.textContent, Number(d.value)),
-                            prec = (Number(d.value) + "").split("."),
-                            round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
-                        return function (t) {
-                            self.textContent = d3.format(format)(Math.round(i(t) * round) / round);
-                            value = self.textContent
-                        };
-                    }).attr(
-                    "fill-opacity", 1).attr("y", 0)
-                .attr("class", function (d) {
-                    return "value"
-                }).attr("x", d => {
-                    return xScale(xValue(d)) + 10
-                })
-                .attr("y", 22)
-        }
+                }).attr(
+                "fill-opacity", 1).attr("y", 0)
+            .attr("class", function (d) {
+                return "value"
+            }).attr("x", d => {
+                return xScale(xValue(d)) + 10
+            })
+            .attr("y", 22)
+        
 
 
         var barUpdate = bar.transition("2").duration(2990 * interval_time).ease(d3.easeLinear);
@@ -395,14 +361,12 @@ function draw(data) {
                 return "label ";
             }).style('fill', d => getColor(d))
             .attr("width", d => xScale(xValue(d)))
-        if (!long) {
 
-            barUpdate.select(".value").attr("class", function (d) {
-                    return "value"
-                }).style('fill', d => getColor(d))
-                .attr("width", d => xScale(xValue(d)))
+        barUpdate.select(".value").attr("class", function (d) {
+                return "value"
+            }).style('fill', d => getColor(d))
+            .attr("width", d => xScale(xValue(d)))
 
-        }
         barUpdate.select(".barInfo").attr("stroke", function (d) {
             return getColor(d);
         })
@@ -416,7 +380,6 @@ function draw(data) {
                     return d.name;
                 })
             .attr("x", d => {
-                if (long) return 10;
                 return xScale(xValue(d)) - 10
             })
             .attr(
@@ -437,34 +400,16 @@ function draw(data) {
                 return "1px";
             })
 
-        if (long) {
-            barInfo.tween(
-                "text",
-                function (d) {
-                    var self = this;
-                    var str = d[divide_by] + "-" + d.name + '  数值:'
-
-                    var i = d3.interpolate(self.textContent.slice(str.length, 99), Number(d.value)),
-                        prec = (Number(d.value) + "").split("."),
-                        round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
-                    return function (t) { 
-                        self.textContent = d[divide_by] + "-" + d.name + '  数值:' + d3.format(format)(Math.round(i(t) * round) / round);
-                    };
-                })
-        }
-        if (!long) {
-            barUpdate.select(".value").tween("text", function (d) {
-                var self = this;
-                var i = d3.interpolate((self.textContent), Number(d.value)),
-                    prec = (Number(d.value) + "").split("."),
-                    round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
-                return function (t) {
-                    self.textContent = d3.format(format)(Math.round(i(t) * round) / round);
-                    d.value = self.textContent;
-                };
-            }).duration(2990 * interval_time).attr("x", d => xScale(xValue(d)) + 10)
-
-        }
+        barUpdate.select(".value").tween("text", function (d) {
+            var self = this;
+            var i = d3.interpolate((self.textContent), Number(d.value)),
+                prec = (Number(d.value) + "").split("."),
+                round = (prec.length > 1) ? Math.pow(10, prec[1].length) : 1;
+            return function (t) {
+                self.textContent = d3.format(format)(Math.round(i(t) * round) / round);
+                d.value = self.textContent;
+            };
+        }).duration(2990 * interval_time).attr("x", d => xScale(xValue(d)) + 10)
 
         var barExit = bar.exit().attr("fill-opacity", 1).transition().duration(2500 * interval_time)
 
@@ -473,18 +418,15 @@ function draw(data) {
             })
             .remove().attr("fill-opacity", 0);
         barExit.select("rect").attr("fill-opacity", 0).attr("width", xScale(currentData[currentData.length - 1]["value"]))
-        if (!long) {
 
-            barExit.select(".value").attr("fill-opacity", 0).attr("x", () => {
-                return xScale(currentData[currentData.length - 1]["value"]
+        barExit.select(".value").attr("fill-opacity", 0).attr("x", () => {
+            return xScale(currentData[currentData.length - 1]["value"]
 
-                )
-            })
-        }
+            )
+        })
         barExit.select(".barInfo").attr("fill-opacity", 0).attr("stroke-width", function (d) {
             return "0px";
         }).attr("x", () => {
-            if (long) return 10;
             return (xScale(currentData[currentData.length - 1]["value"] - 10)
 
             )
@@ -530,6 +472,7 @@ function draw(data) {
         }
 
     }, 3000 * interval_time);
+
     setInterval(() => {
 
         console.log(currentData);
