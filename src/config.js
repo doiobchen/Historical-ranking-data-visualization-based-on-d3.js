@@ -4,9 +4,6 @@
   // 如果输入的数据是用Excel编写的csv文件，那么大概率应该使用GBK。
   encoding: "GBK",
 
-  // 每个时间节点最多显示的条目数。
-  max_number: 20,
-
   // 控制是否显示顶部附加信息文字。
   showMessage: true,
 
@@ -20,18 +17,6 @@
 
   // 倒序，使得最短的条位于最上方
   reverse: false,
-
-  // 颜色根据什么字段区分？
-  divide_by: 'name',
-
-  // 字段的值与其对应的颜色值
-  color: {
-    '张三':'#00318b',
-    '李四':'#007123',
-  },
-
-  // 颜色绑定增长率
-  changeable_color: false,
 
   // 附加信息内容。
   itemLabel: "左侧文字",

@@ -21,7 +21,7 @@ Name2|Type2|Value2|Date2
 
 **Names** will be displayed as categorical labels on Y-axis. **Name-Type** together will be displayed as annotations on bars.
 
-**Types** are associated with bar colors. Please use type names with no whitespaces or any special characters other than English letters and Chinese characters.
+**Types** are associated with bar colorScale[d.name.hashCode20()]s. Please use type names with no whitespaces or any special characters other than English letters and Chinese characters.
 
 **Values** are associated with bar length. They have to be interger or float values. 
 

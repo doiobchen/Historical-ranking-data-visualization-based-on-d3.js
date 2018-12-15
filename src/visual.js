@@ -6,9 +6,16 @@
  * @desc 可视化核心代码
  */
 
+ var dateList = null;
+ var nameList = null;
+ var colorList = null;
+
 d3.text("has0score.csv").then(function(csvString){
     var data = d3.csvParse(csvString);
     try {
+        dateList = createDateList(data);
+        nameList = createNameList(data);
+        colorList = createColorList(nameList.length);
         draw(data);
     } catch (error) {
         alert(error)            
@@ -16,22 +23,7 @@ d3.text("has0score.csv").then(function(csvString){
 });
 
 function draw(data) {
-    console.log(data);
-    var time = getDatesList(data); 
-    var name_list = getNameList(data);
-    var divide_by = config.divide_by;
-
-    var colorRange = d3.interpolateCubehelix("#003AAB", "#01ADFF")
-    // 选择颜色
-    function getColor(d) {
-        var r = 0.00;
-
-        if (d[divide_by] in config.color)
-            return config.color[d[divide_by]]
-        else {
-            return d3.schemeCategory10[Math.floor((d[divide_by].charCodeAt() % 10))]
-        }
-    }
+    console.log("draw() called.");
 
     var showMessage = config.showMessage;
     var interval_time = config.interval_time;
@@ -40,12 +32,6 @@ function draw(data) {
     var typeLabel = config.typeLabel;
     // 长度小于display_barInfo的bar将不显示barInfo
     var display_barInfo = config.display_barInfo;
-    // 显示类型
-    if (divide_by != 'name') {
-        var use_type_info = true;
-    } else {
-        var use_type_info = false;
-    }
     // 使用计数器
     var use_counter = config.use_counter;
     // 每个数据的间隔日期
@@ -58,11 +44,9 @@ function draw(data) {
     var bottom_margin = config.bottom_margin;
     var timeFormat = config.timeFormat
     var item_x = config.item_x;
-    var max_number = config.max_number;
     var reverse = config.reverse;
     var text_x = config.text_x;
     var offset = config.offset;
-    var animation = config.animation;
     const margin = {
         left: left_margin,
         right: right_margin,
@@ -72,13 +56,13 @@ function draw(data) {
 
     var enter_from_0 = config.enter_from_0;
     interval_time /= 3;
-    var currentdate = time[0].toString();
+    var currentdate = dateList[0].toString();
     var currentData = [];
     var lastname;
     
     
     const svg = d3.select('svg');
-
+    svg.attr('fill', "black");
     const width = svg.attr('width');
     const height = svg.attr('height');
     const innerWidth = width - margin.left - margin.right;
@@ -164,14 +148,6 @@ function draw(data) {
                 .attr("class", "days")
                 .attr("x", text_x + offset)
                 .attr("y", text_y);
-        } else {
-            // 显示榜首type
-            if (use_type_info == true) {
-                var top_type = g.insert("text")
-                    .attr("class", "days")
-                    .attr("x", text_x + offset)
-                    .attr("y", text_y);
-            }
         }
     }
     var counter = {
@@ -232,12 +208,7 @@ function draw(data) {
                             self.textContent = d3.format(format)(Math.round(i(t) * round) / round);
                         };
                     });
-            } else if (use_type_info == true) {
-                // 榜首type更新
-                top_type.data(currentData).text(function (d) {
-                    return d['type']
-                });
-            }
+            } 
         }
 
 
@@ -256,7 +227,7 @@ function draw(data) {
                     }
                 }).attr("fill-opacity", 0)
             .attr("height", 80).attr("y", 50)
-            .style("fill", d => getColor(d))
+            .style("fill", d => colorOfName(d.name))
             .transition()
             .delay(500 * interval_time)
             .duration(2490 * interval_time)
@@ -265,7 +236,7 @@ function draw(data) {
                 xScale(xValue(d)))
             .attr("fill-opacity", 1);
 
-        barEnter.append("text").attr("y", 50).attr("fill-opacity", 0).style('fill', d => getColor(d)).transition().delay(500 * interval_time).duration(
+        barEnter.append("text").attr("y", 50).attr("fill-opacity", 0).style('fill', d => colorOfName(d.name)).transition().delay(500 * interval_time).duration(
                 2490 * interval_time)
             .attr(
                 "fill-opacity", 1).attr("y", 0)
@@ -287,7 +258,7 @@ function draw(data) {
                         return xScale(currentData[currentData.length - 1].value);
                     }
                 })
-            .attr("stroke", d => getColor(d))
+            .attr("stroke", d => colorOfName(d.name))
             .attr("class", function () {
                 return "barInfo"
             })
@@ -295,9 +266,6 @@ function draw(data) {
                 0).transition()
             .delay(500 * interval_time).duration(2490 * interval_time).text(
                 function (d) {
-                    if (use_type_info) {
-                        return d[divide_by] + "-" + d.name;
-                    }
                     return d.name;
                 })
             .attr("x", d => {
@@ -329,7 +297,7 @@ function draw(data) {
                     } else {
                         return xScale(currentData[currentData.length - 1].value);
                     }
-                }).attr("y", 50).attr("fill-opacity", 0).style('fill', d => getColor(d)).transition()
+                }).attr("y", 50).attr("fill-opacity", 0).style('fill', d => colorOfName(d.name)).transition()
             .duration(2990 * interval_time).tween(
                 "text",
                 function (d) {
@@ -354,29 +322,26 @@ function draw(data) {
 
         var barUpdate = bar.transition().duration(2990 * interval_time).ease(d3.easeLinear);
 
-        barUpdate.select("rect").style('fill', d => getColor(d))
+        barUpdate.select("rect").style('fill', d => colorOfName(d.name))
             .attr("width", d => xScale(xValue(d)))
 
         barUpdate.select(".label").attr("class", function (d) {
                 return "label ";
-            }).style('fill', d => getColor(d))
+            }).style('fill', d => colorOfName(d.name))
             .attr("width", d => xScale(xValue(d)))
 
         barUpdate.select(".value").attr("class", function (d) {
                 return "value"
-            }).style('fill', d => getColor(d))
+            }).style('fill', d => colorOfName(d.name))
             .attr("width", d => xScale(xValue(d)))
 
         barUpdate.select(".barInfo").attr("stroke", function (d) {
-            return getColor(d);
+            return colorOfName(d.name);
         })
 
         var barInfo = barUpdate.select(".barInfo")
             .text(
                 function (d) {
-                    if (use_type_info) {
-                        return d[divide_by] + "-" + d.name;
-                    }
                     return d.name;
                 })
             .attr("x", d => {
@@ -449,21 +414,21 @@ function draw(data) {
     var update_rate = config.update_rate
     var inter = setInterval(function next() {
 
-        currentdate = time[i];
-        currentData = dataOnDate(data, time[i]);
+        currentdate = dateList[i];
+        currentData = dataOnDate(data, dateList[i]);
         d3.transition()
             .each(redraw)
             .each(change);
         i++;
 
-        if (i >= time.length) {
+        if (i >= dateList.length) {
             window.clearInterval(inter);
         }
 
     }, 3000 * interval_time);
 };
 
-function getDatesList(data) {
+function createDateList(data) {
     let dates = [];
     data.forEach(element => {
         if (dates.indexOf(element["date"]) == -1) {
@@ -474,7 +439,7 @@ function getDatesList(data) {
     return dates;
 }
 
-function getNameList(data) {
+function createNameList(data) {
     let nameList = [];
 
     data.forEach(e => {
@@ -493,4 +458,37 @@ function dataOnDate(data, date) {
         }
     });
     return dataOnDate;
+}
+
+function createColorList(len) {
+    let list = [];
+    for (let i = 0; i < len; ++i) {
+        list.push(i/len);
+    }
+    return shuffle(list);
+    
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+      
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+      
+          // Pick a remaining element...
+          randomIndex = Math.floor(Math.random() * currentIndex);
+          currentIndex -= 1;
+      
+          // And swap it with the current element.
+          temporaryValue = array[currentIndex];
+          array[currentIndex] = array[randomIndex];
+          array[randomIndex] = temporaryValue;
+        }
+      
+        return array;
+    }
+}
+
+const colorScale = d3.interpolateRainbow;
+function colorOfName(name) {
+    let index = nameList.indexOf(name);
+    return colorScale(colorList[index]);
 }
