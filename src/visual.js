@@ -255,9 +255,9 @@ function draw(data) {
                         return xScale(currentData[currentData.length - 1].value);
                     }
                 }).attr("fill-opacity", 0)
-            .attr("height", 26).attr("y", 50)
+            .attr("height", 80).attr("y", 50)
             .style("fill", d => getColor(d))
-            .transition("a")
+            .transition()
             .delay(500 * interval_time)
             .duration(2490 * interval_time)
             .attr("y", 0).attr(
@@ -265,7 +265,7 @@ function draw(data) {
                 xScale(xValue(d)))
             .attr("fill-opacity", 1);
 
-        barEnter.append("text").attr("y", 50).attr("fill-opacity", 0).style('fill', d => getColor(d)).transition("2").delay(500 * interval_time).duration(
+        barEnter.append("text").attr("y", 50).attr("fill-opacity", 0).style('fill', d => getColor(d)).transition().delay(500 * interval_time).duration(
                 2490 * interval_time)
             .attr(
                 "fill-opacity", 1).attr("y", 0)
@@ -352,7 +352,7 @@ function draw(data) {
         
 
 
-        var barUpdate = bar.transition("2").duration(2990 * interval_time).ease(d3.easeLinear);
+        var barUpdate = bar.transition().duration(2990 * interval_time).ease(d3.easeLinear);
 
         barUpdate.select("rect").style('fill', d => getColor(d))
             .attr("width", d => xScale(xValue(d)))
@@ -391,8 +391,6 @@ function draw(data) {
                     return 1;
                 }
             )
-
-
             .attr("stroke-width", function (d) {
                 if (xScale(xValue(d)) - 10 < display_barInfo) {
                     return "0px";
@@ -436,25 +434,15 @@ function draw(data) {
 
 
     function change() {
-        dataSort()
-        yScale
-            .domain(currentData.map(d => d.name).reverse())
-            .range([innerHeight, 0]);
-        if (animation == 'linear') {
-            g.selectAll(".bar")
-                .data(currentData, function (d) {
-                    return d.name;
-                }).transition("1").ease(d3.easeLinear).duration(3000 * update_rate * interval_time).attr("transform", function (d) {
-                    return "translate(0," + yScale(yValue(d)) + ")";
-                })
-        } else {
-            g.selectAll(".bar")
-                .data(currentData, function (d) {
-                    return d.name;
-                }).transition("1").duration(3000 * update_rate * interval_time).attr("transform", function (d) {
-                    return "translate(0," + yScale(yValue(d)) + ")";
-                })
-        }
+        yScale.domain(currentData.map(d => d.name).reverse())
+              .range([innerHeight, 0]);
+
+        g.selectAll(".bar")
+            .data(currentData, d => d.name)
+            .transition().duration(3000 * update_rate * interval_time)
+            .attr("transform", function (d) {
+                return "translate(0," + yScale(yValue(d)) + ")";
+            })
     }
 
     var i = 0;
@@ -463,8 +451,9 @@ function draw(data) {
 
         currentdate = time[i];
         currentData = dataOnDate(data, time[i]);
-        d3.transition("2")
-            .each(redraw);
+        d3.transition()
+            .each(redraw)
+            .each(change);
         i++;
 
         if (i >= time.length) {
@@ -472,13 +461,6 @@ function draw(data) {
         }
 
     }, 3000 * interval_time);
-
-    setInterval(() => {
-
-        console.log(currentData);
-        d3.transition()
-            .each(change)
-    }, 3000 * update_rate * interval_time)
 };
 
 function getDatesList(data) {
