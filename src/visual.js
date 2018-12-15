@@ -62,7 +62,6 @@ function draw(data) {
     
     
     const svg = d3.select('svg');
-    svg.attr('fill', "black");
     const width = svg.attr('width');
     const height = svg.attr('height');
     const innerWidth = width - margin.left - margin.right;
@@ -226,7 +225,7 @@ function draw(data) {
                         return xScale(currentData[currentData.length - 1].value);
                     }
                 }).attr("fill-opacity", 0)
-            .attr("height", 80).attr("y", 50)
+            .attr("height", 70).attr("y", 50)
             .style("fill", d => colorOfName(d.name))
             .transition()
             .delay(500 * interval_time)
@@ -487,7 +486,7 @@ function createColorList(len) {
     }
 }
 
-const colorScale = d3.interpolateRainbow;
+const colorScale = d3.interpolateBrBG;
 function colorOfName(name) {
     let index = nameList.indexOf(name);
     return colorScale(colorList[index]);
