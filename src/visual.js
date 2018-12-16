@@ -486,7 +486,7 @@ function createColorList(len) {
     }
 }
 
-const colorScale = d3.interpolateBrBG;
+const colorScale = d3.interpolateRainbow;  //interpolateMagma;          //interpolatePuOr;
 function colorOfName(name) {
     let index = nameList.indexOf(name);
     return colorScale(colorList[index]);
